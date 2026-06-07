@@ -64,13 +64,6 @@ def home_default():
 def home_nav():
     return render_template('index.html', params=params)
 
-# Routing Posts
-@app.route("/post/<string:post_slug>", methods=['GET'])
-def post_route(post_slug):
-    post = Posts.query.filter_by(slug=post_slug).first_or_404()
-
-    return render_template('post.html', params=params, post=post)
-
 @app.route("/about.html")
 def about():
     return render_template('about.html', params=params)
@@ -100,9 +93,12 @@ def contact():
 
     return render_template('contact.html', params=params)
 
-@app.route("/post.html")
-def post():
-    return render_template('post.html', params=params)
+# Routing Posts
+@app.route("/post/<string:post_slug>", methods=['GET'])
+def post_route(post_slug):
+    post = Posts.query.filter_by(slug=post_slug).first_or_404()
+
+    return render_template('post.html', params=params, post=post)
 
 if __name__ == '__main__':
     app.run(debug=True)
