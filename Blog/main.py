@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
 import json
@@ -11,6 +11,9 @@ load_dotenv()
 
 GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
 GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 with open("config.json", "r") as c:
     params = json.load(c)["params"]
@@ -18,6 +21,8 @@ with open("config.json", "r") as c:
 local_server = params["local_server"]
 
 app = Flask(__name__)
+
+app.secret_key = os.getenv("SECRET_KEY")
 
 # Connecting with smtp server
 app.config.update(
@@ -58,11 +63,15 @@ class Posts(db.Model):
 
 @app.route("/")
 def home_default():
-    return render_template('index.html', params=params)
+    posts= Posts.query.filter_by().all()
+
+    return render_template('index.html', params=params, posts=posts)
 
 @app.route("/index.html")
 def home_nav():
-    return render_template('index.html', params=params)
+    posts= Posts.query.filter_by().all()
+
+    return render_template('index.html', params=params, posts=posts)
 
 @app.route("/about.html")
 def about():
@@ -99,6 +108,30 @@ def post_route(post_slug):
     post = Posts.query.filter_by(slug=post_slug).first_or_404()
 
     return render_template('post.html', params=params, post=post)
+
+# Dashboard
+@app.route("/dashboard", methods= ['GET', 'POST'])
+def dashboard():
+    # 1. Check if the user is ALREADY logged in
+    if 'user' in session and session['user'] == ADMIN_EMAIL:
+        posts = Posts.query.all()
+        # Render the new admin dashboard template!
+        return render_template('admin.html', params=params, posts=posts)
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        if(email == ADMIN_EMAIL and password == ADMIN_PASSWORD):
+            # 2. Set the session variable
+            session['user'] = email
+            # Redirect back to the dashboard via a fresh GET request
+            return redirect('/dashboard')
+        else:
+            # Pass an error message to the template!
+            return render_template('login.html', params=params, error="Invalid email or password. Please try again.")
+
+    # 3. If it's a GET request and they aren't logged in, show the login page
+    return render_template('login.html', params=params)
 
 if __name__ == '__main__':
     app.run(debug=True)
