@@ -50,18 +50,20 @@
             </div>
 
             <!-- Post preview 1 -->
+            {% for post in posts %}
             <div class="post-preview hv-post-card-featured">
-                    <a href="/post/man-explore-stars" class="hv-card-link">
-                        <h2 class="post-title hv-card-title">Man must explore, and this is exploration at its greatest
+                    <a href="/post/{{post.slug}}" class="hv-card-link">
+                        <h2 class="post-title hv-card-title">{{post.title}}
                         </h2>
-                        <h3 class="post-subtitle hv-card-subtitle">Problems look mighty small from 150 miles up</h3>
+                        <h3 class="post-subtitle hv-card-subtitle">{{post.sub_title}}</h3>
                     </a>
                     <p class="post-meta hv-card-meta">
                         Posted by
-                        <a href="#!" class="hv-meta-author">Nexus Tech</a>
-                        on September 24, 2023
+                        <a href="#!" class="hv-meta-author">{{post.author}}</a>
+                        on {{post.updated_at.strftime('%B %d, %Y')}}
                     </p>
                 </div>
+                {% endfor %}
 
             <!-- Divider-->
             <hr class="my-4" />

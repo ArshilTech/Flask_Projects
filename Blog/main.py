@@ -58,11 +58,15 @@ class Posts(db.Model):
 
 @app.route("/")
 def home_default():
-    return render_template('index.html', params=params)
+    posts= Posts.query.filter_by().all()
+
+    return render_template('index.html', params=params, posts=posts)
 
 @app.route("/index.html")
 def home_nav():
-    return render_template('index.html', params=params)
+    posts= Posts.query.filter_by().all()
+
+    return render_template('index.html', params=params, posts=posts)
 
 @app.route("/about.html")
 def about():
