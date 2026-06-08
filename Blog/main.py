@@ -11,6 +11,8 @@ load_dotenv()
 
 GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
 GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
 with open("config.json", "r") as c:
     params = json.load(c)["params"]
@@ -107,7 +109,14 @@ def post_route(post_slug):
 # Dashboard
 @app.route("/dashboard", methods= ['GET', 'POST'])
 def dashboard():
-    return render_template('login.html', params=params)
+    if request.method == 'POST':
+        email = request.form.get(email)
+        password = request.form.get(password)
+        if(email == ADMIN_EMAIL and password == ADMIN_PASSWORD):
+            # Set the session variable
+            pass
+    else:
+        return render_template('login.html', params=params)
 
 if __name__ == '__main__':
     app.run(debug=True)
