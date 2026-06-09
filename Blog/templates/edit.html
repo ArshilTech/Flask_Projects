@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="container mt-5 pt-5 mb-5 hv-main-content">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">{% if id == '0' %}Add New Post{% else %}Edit Post{% endif %}</h1>
+                <a href="/dashboard" class="btn btn-outline-secondary">← Back to Dashboard</a>
+            </div>
+
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <form action="/edit/{{ id }}" method="POST">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="title" name="title" placeholder="Title" value="{{ post.title if post else '' }}" required>
+                                    <label for="title">Post Title</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="sub_title" name="sub_title" placeholder="Sub Title" value="{{ post.sub_title if post else '' }}">
+                                    <label for="sub_title">Subtitle</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="slug" name="slug" placeholder="Slug" value="{{ post.slug if post else '' }}" required>
+                                    <label for="slug">URL Slug (e.g., my-new-post)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="author" name="author" placeholder="Author" value="{{ post.author if post else 'Nexus Tech' }}" required>
+                                    <label for="author">Author Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="image" name="image" placeholder="Image Name" value="{{ post.image if post else '' }}">
+                                    <label for="image">Header Image (e.g., bg.jpg)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="content" class="form-label text-muted ms-1">HTML Post Content</label>
+                            <textarea class="form-control" id="content" name="content" rows="15" required>{{ post.content if post else '' }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 text-uppercase shadow-sm">
+                            <i class="fas fa-save me-2"></i> Save Post
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
