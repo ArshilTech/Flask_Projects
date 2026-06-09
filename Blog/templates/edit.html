@@ -1,6 +1,13 @@
 {% extends "layout.html" %}
 {% block body %}
 
+<style>
+    .ck-content img {
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+
 <div class="container mt-5 pt-5 mb-5 hv-main-content">
     <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -68,4 +75,12 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+
+<script>
+    CKEDITOR.replace('content');
+</script>
 {% endblock %}
