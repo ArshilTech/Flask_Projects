@@ -104,7 +104,7 @@ def contact():
 
 # Routing Posts
 @app.route("/post/<string:post_slug>", methods=['GET'])
-def post_route(post_slug):
+def post(post_slug):
     post = Posts.query.filter_by(slug=post_slug).first_or_404()
 
     return render_template('post.html', params=params, post=post)
@@ -132,6 +132,51 @@ def dashboard():
 
     # 3. If it's a GET request and they aren't logged in, show the login page
     return render_template('login.html', params=params)
+
+# Edit Post
+@app.route("/edit/<string:id>", methods= ['GET', 'POST'])
+def post_edit(id):
+
+    # Check if the user is ALREADY logged in
+    if 'user' in session and session['user'] == ADMIN_EMAIL:
+
+        # 2. Fetch the existing post if we are editing (not creating new)
+        if id != '0':
+            post = Posts.query.filter_by(id=id).first()
+        else:
+            post = None
+
+        if(request.method == 'POST'):
+            title= request.form.get('title')
+            sub_title= request.form.get('sub_title')
+            slug= request.form.get('slug')
+            author= request.form.get('author')
+            content= request.form.get('content')
+            image= request.form.get('image')
+
+            # Create a NEW post
+            if id=='0':
+                entry= Posts(title=title, sub_title=sub_title, slug=slug, content=content, author=author, image=image)
+                db.session.add(entry)
+                db.session.commit()
+            else:
+                # UPDATE an existing post
+                post.title = title
+                post.sub_title = sub_title
+                post.slug = slug
+                post.author = author
+                post.content = content
+                post.image = image
+                db.session.commit()
+
+            # Redirect back to the dashboard after saving!
+            return redirect('/dashboard')
+        
+        # 3. Render the template securely inside the authentication block
+        return render_template('edit.html', params=params, post=post, id=id)
+    
+    # 4. If they aren't logged in, redirect them away
+    return redirect('/dashboard')
 
 if __name__ == '__main__':
     app.run(debug=True)
