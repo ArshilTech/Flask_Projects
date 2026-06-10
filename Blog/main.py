@@ -178,5 +178,11 @@ def post_edit(id):
     # 4. If they aren't logged in, redirect them away
     return redirect('/dashboard')
 
+# Logout
+@app.route("/logout")
+def logout():
+    session.pop('user', None)
+    return redirect('/dashboard')
+
 if __name__ == '__main__':
     app.run(debug=True)

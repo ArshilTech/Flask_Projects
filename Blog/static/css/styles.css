@@ -12828,6 +12828,38 @@ blockquote:hover {
   }
 }
 
+/* Dashboard navbar with dark text (for light backgrounds) */
+#mainNav.navbar-dashboard .navbar-nav>li.nav-item>a.nav-link {
+  color: rgba(0, 0, 0, 0.95) !important;
+}
+
+#mainNav.navbar-dashboard .navbar-nav>li.nav-item>a.nav-link:hover {
+  color: var(--hv-primary-dark) !important;
+}
+
+#mainNav.navbar-dashboard .navbar-brand {
+  -webkit-text-fill-color: var(--hv-text) !important;
+  color: var(--hv-text) !important;
+}
+
+@media (min-width: 992px) {
+  #mainNav.navbar-dashboard {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: var(--hv-shadow-sm);
+  }
+
+  #mainNav.navbar-dashboard .navbar-nav>li.nav-item>a.nav-link {
+    color: rgba(0, 0, 0, 0.95) !important;
+  }
+
+  #mainNav.navbar-dashboard .navbar-brand {
+    -webkit-text-fill-color: var(--hv-text) !important;
+  }
+}
+
 /* ---------------------------------------------------------------------------
  * MASTHEAD HERO — Flowing Gradients & Floating Sparkles
  * ------------------------------------------------------------------------- */
