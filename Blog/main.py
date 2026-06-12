@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask_mail import Mail
 import os
 from werkzeug.utils import secure_filename
+import math
 
 # Loading env variables
 load_dotenv()
@@ -64,16 +65,35 @@ class Posts(db.Model):
     updated_at = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 @app.route("/")
-def home_default():
-    posts= Posts.query.filter_by().all()
-
-    return render_template('index.html', params=params, posts=posts)
-
 @app.route("/index.html")
-def home_nav():
-    posts= Posts.query.filter_by().all()
+def home():
+    # Grab all the posts
+    posts= Posts.query.order_by(Posts.created_at.desc()).all()
+    
+    # Figure out the total number of pages needed
+    last = math.ceil(len(posts) / int(params['no_of_posts']))
 
-    return render_template('index.html', params=params, posts=posts)
+    # Get the current page from the URL. If there isn't one, assume page 1.
+    page = request.args.get('page')
+    if not str(page).isnumeric():
+        page = 1
+    page = int(page)
+
+    # Slice the posts list to only show the chunk for this specific page
+    posts = posts[(page-1) * int(params['no_of_posts']) : (page-1) * int(params['no_of_posts']) + int(params['no_of_posts'])]
+
+    # Figure out where the Next and Prev buttons should link to
+    if page == 1:
+        prev = "#"
+        next = "/?page=" + str(page + 1)
+    elif page == last:
+        prev = "/?page=" + str(page - 1)
+        next = "#"
+    else:
+        prev = "/?page=" + str(page - 1)
+        next = "/?page=" + str(page + 1)
+
+    return render_template('index.html', params=params, posts=posts, prev=prev, next=next)
 
 @app.route("/about.html")
 def about():
