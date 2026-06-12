@@ -64,13 +64,8 @@ class Posts(db.Model):
     updated_at = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 @app.route("/")
-def home_default():
-    posts= Posts.query.filter_by().all()
-
-    return render_template('index.html', params=params, posts=posts)
-
 @app.route("/index.html")
-def home_nav():
+def home():
     posts= Posts.query.filter_by().all()
 
     return render_template('index.html', params=params, posts=posts)
