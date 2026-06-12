@@ -68,7 +68,7 @@ class Posts(db.Model):
 @app.route("/index.html")
 def home():
     # Grab all the posts
-    posts= Posts.query.filter_by().all()
+    posts= Posts.query.order_by(Posts.created_at.desc()).all()
     
     # Figure out the total number of pages needed
     last = math.ceil(len(posts) / int(params['no_of_posts']))
