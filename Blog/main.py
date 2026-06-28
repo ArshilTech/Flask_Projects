@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
 import json
@@ -7,6 +7,9 @@ from flask_mail import Mail
 import os
 from werkzeug.utils import secure_filename
 import math
+from pydantic import BaseModel, Field
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
 
 # Loading env variables
 load_dotenv()
@@ -58,11 +61,43 @@ class Posts(db.Model):
     sub_title = db.Column(db.String(255), nullable=True)
     slug = db.Column(db.String(255), nullable=False)
     author = db.Column(db.String(100), nullable=False)
-    excerpt = db.Column(db.String(500), nullable=True)
     content = db.Column(db.Text, nullable=False)
     image = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    summary = db.Column(db.Text, nullable=True)
+    key_takeaways = db.Column(db.Text, nullable=True)
+
+class BlogSummarySchema(BaseModel):
+    summary: str = Field(description="A concise 2-3 sentence summary of the blog post.")
+    key_takeaways: list[str] = Field(description="A list of the top 3-4 key bullet points from the post.")
+
+def generate_blog_summary(content: str) -> dict:
+    """
+        Generate Summary for the blog
+    """
+    # Initialize the LLM
+    llm = ChatGroq(
+        model="qwen/qwen3-32b", 
+        temperature=0.3,
+        api_key=os.getenv("GROQ_API_KEY")
+    )
+    
+    # Force the model to output the exact Pydantic structure
+    structured_llm = llm.with_structured_output(BlogSummarySchema)
+    
+    # Create the prompt template
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an expert editor. Analyze the blog post content provided and generate a high-quality summary and key takeaways."),
+        ("user", "Here is the blog post content:\n\n{blog_content}")
+    ])
+    
+    # Chain them together and execute
+    chain = prompt | structured_llm
+    result = chain.invoke({"blog_content": content})
+    
+    # Return as a standard Python dictionary
+    return result.model_dump()
 
 @app.route("/")
 @app.route("/index.html")
@@ -174,6 +209,7 @@ def post_edit(id):
             slug= request.form.get('slug')
             author= request.form.get('author')
             content= request.form.get('content')
+            summary_data = generate_blog_summary(content)
 
             # Catch the uploaded Header Image
             image_file = request.files.get('image')
@@ -192,7 +228,16 @@ def post_edit(id):
 
             # Create a NEW post
             if id=='0':
-                entry= Posts(title=title, sub_title=sub_title, slug=slug, content=content, author=author, image=image_name)
+                entry= Posts(
+                    title=title,
+                    sub_title=sub_title,
+                    slug=slug,
+                    summary=summary_data["summary"],
+                    key_takeaways=json.dumps(summary_data["key_takeaways"]),
+                    content=content,
+                    author=author,
+                    image=image_name
+                )
                 db.session.add(entry)
                 db.session.commit()
             else:
@@ -201,6 +246,8 @@ def post_edit(id):
                 post.sub_title = sub_title
                 post.slug = slug
                 post.author = author
+                post.summary = summary_data["summary"]
+                post.key_takeaways = json.dumps(summary_data["key_takeaways"])
                 post.content = content
                 post.image = image_name
                 db.session.commit()
@@ -231,6 +278,23 @@ def post_delete(id):
 def logout():
     session.pop('user', None)
     return redirect('/dashboard')
+
+@app.route("/api/summary/<int:post_id>", methods=['GET'])
+def summarize_post(post_id):
+    post = Posts.query.get_or_404(post_id)
+
+    if not post.summary:
+        data = generate_blog_summary(post.content)
+
+        post.summary = data["summary"]
+        post.key_takeaways = json.dumps(data["key_takeaways"])
+        db.session.commit()
+
+    return jsonify({
+        "summary": post.summary,
+        "key_takeaways": json.loads(post.key_takeaways)
+    })
+
 
 if __name__ == '__main__':
     app.run(debug=True)
