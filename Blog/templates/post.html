@@ -45,6 +45,13 @@
             <div class="col-lg-9 hv-article-main-card">
                 <div class="hv-article-card-body">
                     {{post.content | safe}}
+                    <hr>
+
+                    <button id="summaryBtn" class="btn btn-primary" data-post-id="{{ post.id }}">
+                        ✨ Summarize with AI
+                    </button>
+
+                    <div id="summaryBox" class="mt-4"></div>
                 </div>
             </div>
 
@@ -52,4 +59,8 @@
     </div>
 </article>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/post.js') }}"></script>
 {% endblock %}
